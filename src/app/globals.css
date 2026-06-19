@@ -1,0 +1,17 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light dark;
+}
+
+body {
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+}
+
+/* 小工具：後台用的單色卡片外框 */
+.card {
+  border: 1px solid color-mix(in oklab, currentColor 14%, transparent);
+  border-radius: 12px;
+}
