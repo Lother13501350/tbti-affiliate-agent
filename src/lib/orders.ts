@@ -64,7 +64,12 @@ function decodeSubId(subId?: string | null): {
   for (const t of tokens) {
     const up = t.toUpperCase();
     if (!personaCode && isPersonaCode(up)) personaCode = up;
-    if (!placement && PLACEMENT_CODES.includes(t.toLowerCase())) placement = t.toLowerCase();
+    if (!placement) {
+      // SubId 段內底線已被去掉（result_top → resulttop），比對時兩邊都去底線
+      const lc = t.toLowerCase();
+      const match = PLACEMENT_CODES.find((c) => c.replace(/_/g, "") === lc);
+      if (match) placement = match;
+    }
   }
   return { personaCode, placement };
 }

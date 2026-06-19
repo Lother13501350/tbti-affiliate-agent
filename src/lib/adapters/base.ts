@@ -73,15 +73,16 @@ export function parseOrderRows(
   return out;
 }
 
-/** 在網址 query 設一個參數（找不到 / 非法 URL → 原樣回傳，絕不擋）。 */
+/**
+ * 設一個 query 參數：有就取代、沒有就附加。
+ * 用「regex 只動目標參數」而非 new URL() 整串重編 —— 避免把 Klook 的 k_site
+ * （內含 URL-encoded 目的地）重新編碼而弄壞跳轉。其他參數原封不動。
+ */
 export function setParam(url: string, key: string, value: string): string {
-  try {
-    const u = new URL(url);
-    u.searchParams.set(key, value);
-    return u.toString();
-  } catch {
-    return url;
-  }
+  const enc = encodeURIComponent(value);
+  const re = new RegExp(`([?&]${key}=)[^&]*`);
+  if (re.test(url)) return url.replace(re, `$1${enc}`);
+  return url + (url.includes("?") ? "&" : "?") + `${key}=${enc}`;
 }
 
 /** 從路徑抓第一個符合 regex 的群組（商品 id）。 */

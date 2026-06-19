@@ -75,6 +75,7 @@ export const AUDIENCE_CODES: readonly string[] = AUDIENCES.map((a) => a.code);
 export const PLACEMENTS = [
   { code: "result_top", label: "結果頁置頂" },
   { code: "result_list", label: "結果頁清單" },
+  { code: "recommend", label: "推薦卡" },
   { code: "feed_card", label: "Explore 卡片" },
   { code: "persona_page", label: "人格頁" },
   { code: "article", label: "文章內" },

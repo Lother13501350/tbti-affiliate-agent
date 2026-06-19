@@ -16,8 +16,9 @@ export function OPTIONS() {
 
 export async function GET(req: Request) {
   const u = new URL(req.url);
+  const persona = u.searchParams.get("persona");
   const recs = await recommendProducts({
-    persona: u.searchParams.get("persona"),
+    persona,
     city: u.searchParams.get("city"),
     country: u.searchParams.get("country"),
     budgetTier: u.searchParams.get("budget"),
@@ -27,19 +28,26 @@ export async function GET(req: Request) {
   const base = SITE_URL || new URL("/", req.url).origin;
   return Response.json(
     {
-      items: recs.map((r) => ({
-        id: r.product.id,
-        name: r.product.productName,
-        platform: r.product.platform,
-        city: r.product.city,
-        category: r.product.category,
-        price: r.product.priceFrom,
-        currency: r.product.currency,
-        image: r.product.imageUrl,
-        goCode: r.goCode,
-        goUrl: r.goCode ? `${base}/go/${r.goCode}` : null,
-        score: Number(r.score.toFixed(3)),
-      })),
+      items: recs.map((r) => {
+        // 把情境帶進 goUrl → 點擊時 /go 會即時編成 SubId 做人格級歸因
+        const q = new URLSearchParams();
+        if (persona) q.set("persona", persona);
+        if (r.product.city) q.set("dest", r.product.city);
+        q.set("placement", "recommend");
+        return {
+          id: r.product.id,
+          name: r.product.productName,
+          platform: r.product.platform,
+          city: r.product.city,
+          category: r.product.category,
+          price: r.product.priceFrom,
+          currency: r.product.currency,
+          image: r.product.imageUrl,
+          goCode: r.goCode,
+          goUrl: r.goCode ? `${base}/go/${r.goCode}?${q.toString()}` : null,
+          score: Number(r.score.toFixed(3)),
+        };
+      }),
     },
     { headers: CORS },
   );

@@ -1,8 +1,8 @@
 import type { PlatformAdapter, PartialProduct } from "./types";
 import { parseOrderRows, setParam, idFromPath } from "./base";
 
-// Klook。SubId 參數依實際聯盟網路（Klook Affiliate / Partnerize）而定；
-// MVP 先用 sub_id，待接上正式聯盟方案後在此一處調整即可（不影響其他平台）。
+// Klook。SubId 走「自訂標籤」參數 aff_label1（已用 Klook 連結轉換器驗證）。
+// 之後若要 aff_label2/3 可在此擴充，不影響其他平台。
 export const klookAdapter: PlatformAdapter = {
   id: "klook",
   label: "Klook",
@@ -24,7 +24,7 @@ export const klookAdapter: PlatformAdapter = {
     };
   },
   appendSubId(affiliateUrl, subId) {
-    return setParam(affiliateUrl, "sub_id", subId);
+    return setParam(affiliateUrl, "aff_label1", subId);
   },
   parseOrderReport(rows) {
     return parseOrderRows(rows);
