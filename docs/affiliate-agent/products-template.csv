@@ -1,0 +1,4 @@
+product_name,platform,affiliate_url,product_url,external_product_id,city,category,price,currency,commission_rate,personas
+東京5日機票自選航空,kkday,https://www.kkday.com/zh-tw/product/135223?cid=25446&ud1=TBTI,https://www.kkday.com/zh-tw/product/135223,135223,tokyo,flight,12000,TWD,4,
+大阪環球影城門票,klook,請替換成你的Klook分潤連結,https://www.klook.com/activity/XXXX,,osaka,attraction,2400,TWD,5,FLEX|FOOD
+日本eSIM8天高速上網,kkday,https://www.kkday.com/zh-tw/product/XXXXX?cid=25446&ud1=TBTI,,,esim,450,TWD,8,POOR|SOLO|GRND
