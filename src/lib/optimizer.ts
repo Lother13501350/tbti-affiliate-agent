@@ -1,4 +1,3 @@
-import { query, tool, createSdkMcpServer } from "@anthropic-ai/claude-agent-sdk";
 import { z } from "zod";
 import { tmpdir } from "node:os";
 import { overviewMetrics, productRevenue } from "./revenue";
@@ -7,19 +6,24 @@ import { listProducts } from "./products";
 import { createProposals, type ProposalInput, type Proposal } from "./proposals";
 
 // 「自動優化大腦」—— 用 Claude Agent SDK 跑一個 advisory 代理（規格 §39-42）。
-// 鐵則:它只有「唯讀工具」+ 一個 submit_proposals 輸出工具;canUseTool 把所有非 TBTI 工具擋死。
-// 它產出的是 pending 建議,人工核准後才由 proposals.ts 的決定論程式執行。不碰錢、不碰排序。
+// 鐵則:只有「唯讀工具」+ 一個 submit_proposals 輸出工具;canUseTool 把所有非 TBTI 工具擋死。
+// 產出是 pending 建議,人工核准後才由 proposals.ts 的決定論程式執行。不碰錢、不碰排序。
+//
+// SDK 內含 ~215MB 原生執行檔 → 一律「動態 import」,避免被打包進 Vercel 函式;
+// 加上 next.config 的 outputFileTracingExcludes,確保部署不夾帶這顆 binary。
+// 此代理只在「非 serverless」環境(本機 / Node 主機 / 排程)實際執行。
 
-// 接受一般 API key（ANTHROPIC_API_KEY）或 Claude OAuth token（CLAUDE_CODE_OAUTH_TOKEN）。
-// 兩者皆由 SDK 的 runtime 子行程從環境變數自動取用,這裡只判斷「有沒有設」。
 export const optimizerEnabled = !!(
   process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN
 );
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
+type AgentSdk = typeof import("@anthropic-ai/claude-agent-sdk");
+
 const ok = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data) }] });
 
-function buildServer(captured: ProposalInput[]) {
+function buildServer(sdk: AgentSdk, captured: ProposalInput[]) {
+  const { tool, createSdkMcpServer } = sdk;
   return createSdkMcpServer({
     name: "tbti",
     version: "1.0.0",
@@ -106,14 +110,18 @@ export interface OptimizeResult {
 
 export async function runOptimizer(): Promise<OptimizeResult | null> {
   if (!optimizerEnabled) return null;
+
+  // 動態載入,確保 SDK 與其 215MB binary 不會被打包進部署。
+  const sdk: AgentSdk = await import("@anthropic-ai/claude-agent-sdk");
+
   const captured: ProposalInput[] = [];
-  const server = buildServer(captured);
+  const server = buildServer(sdk, captured);
   const ALLOWED = [
     "get_overview", "get_product_performance", "get_underperformers",
     "get_gaps", "get_broken_products", "get_alternatives", "submit_proposals",
   ].map((n) => `mcp__tbti__${n}`);
 
-  const q = query({
+  const q = sdk.query({
     prompt: PROMPT,
     options: {
       model: MODEL,
