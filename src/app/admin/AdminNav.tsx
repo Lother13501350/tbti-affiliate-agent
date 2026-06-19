@@ -6,6 +6,7 @@ const TABS: { key: string; href: string; label: string }[] = [
   { key: "review", href: "/admin/review", label: "審核佇列" },
   { key: "recommend", href: "/admin/recommend", label: "推薦預覽" },
   { key: "gaps", href: "/admin/gaps", label: "商品缺口" },
+  { key: "proposals", href: "/admin/proposals", label: "優化建議" },
 ];
 
 export function AdminNav({ adminKey, active }: { adminKey: string; active: string }) {
