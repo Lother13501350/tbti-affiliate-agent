@@ -23,8 +23,10 @@ export const discordEnabled = DISCORD_WEBHOOK_URL.length > 0;
 
 export const CRON_SECRET = process.env.CRON_SECRET ?? "";
 
-/** Claude Agent SDK 的「優化大腦」是否可用（缺金鑰 → 停用，不載入 SDK）。 */
-export const ANTHROPIC_ENABLED = (process.env.ANTHROPIC_API_KEY ?? "").length > 0;
+/** Claude Agent SDK 的「優化大腦」是否可用。接受 API key 或 OAuth token（缺則停用，不載入 SDK）。 */
+export const ANTHROPIC_ENABLED = !!(
+  process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN
+);
 
 export const SITE_URL = (
   process.env.NEXT_PUBLIC_SITE_URL ?? ""

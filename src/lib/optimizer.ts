@@ -10,8 +10,11 @@ import { createProposals, type ProposalInput, type Proposal } from "./proposals"
 // 鐵則:它只有「唯讀工具」+ 一個 submit_proposals 輸出工具;canUseTool 把所有非 TBTI 工具擋死。
 // 它產出的是 pending 建議,人工核准後才由 proposals.ts 的決定論程式執行。不碰錢、不碰排序。
 
-export const ANTHROPIC_KEY = process.env.ANTHROPIC_API_KEY ?? "";
-export const optimizerEnabled = ANTHROPIC_KEY.length > 0;
+// 接受一般 API key（ANTHROPIC_API_KEY）或 Claude OAuth token（CLAUDE_CODE_OAUTH_TOKEN）。
+// 兩者皆由 SDK 的 runtime 子行程從環境變數自動取用,這裡只判斷「有沒有設」。
+export const optimizerEnabled = !!(
+  process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_CODE_OAUTH_TOKEN
+);
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
 
 const ok = (data: unknown) => ({ content: [{ type: "text" as const, text: JSON.stringify(data) }] });
