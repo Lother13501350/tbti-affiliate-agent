@@ -4,6 +4,8 @@ const TABS: { key: string; href: string; label: string }[] = [
   { key: "dashboard", href: "/admin", label: "儀表板" },
   { key: "products", href: "/admin/products", label: "商品" },
   { key: "review", href: "/admin/review", label: "審核佇列" },
+  { key: "recommend", href: "/admin/recommend", label: "推薦預覽" },
+  { key: "gaps", href: "/admin/gaps", label: "商品缺口" },
 ];
 
 export function AdminNav({ adminKey, active }: { adminKey: string; active: string }) {

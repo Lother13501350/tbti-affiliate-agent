@@ -19,6 +19,27 @@ export function ReviewRow({ adminKey, product }: { adminKey: string; product: Re
   const [cat, setCat] = useState(product.category ?? "");
   const [busy, setBusy] = useState(false);
   const [done, setDone] = useState("");
+  const [note, setNote] = useState("");
+
+  async function classify() {
+    setBusy(true);
+    setNote("AI 分類中…");
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}/classify?key=${encodeURIComponent(adminKey)}`, {
+        method: "POST",
+      });
+      const j = await res.json();
+      if (res.ok) {
+        setNote(`AI 信心 ${(j.classification?.confidence ?? 0).toFixed(2)}（${j.decision?.tier}）— 重新整理套用`);
+        setTimeout(() => location.reload(), 700);
+      } else {
+        setNote(j.hint || j.error || "分類失敗");
+      }
+    } catch {
+      setNote("網路錯誤");
+    }
+    setBusy(false);
+  }
 
   function toggle(code: string) {
     setSel((p) => (p.includes(code) ? p.filter((x) => x !== code) : [...p, code]));
@@ -96,7 +117,10 @@ export function ReviewRow({ adminKey, product }: { adminKey: string; product: Re
         <div className="mt-1 text-[11px] text-neutral-400">{sel.map((c) => personaTitle(c)).join("・")}</div>
       )}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button disabled={busy} onClick={classify} className="rounded border border-blue-300 px-3 py-1.5 text-sm text-blue-600 disabled:opacity-50 dark:border-blue-900 dark:text-blue-400">
+          AI 分類
+        </button>
         <button disabled={busy} onClick={() => act("active")} className="rounded bg-emerald-600 px-3 py-1.5 text-sm font-semibold text-white disabled:opacity-50">
           通過 → 上架
         </button>
@@ -106,6 +130,7 @@ export function ReviewRow({ adminKey, product }: { adminKey: string; product: Re
         <button disabled={busy} onClick={() => act("rejected")} className="rounded border border-red-300 px-3 py-1.5 text-sm text-red-600 dark:border-red-900">
           拒絕
         </button>
+        {note && <span className="text-xs text-neutral-500">{note}</span>}
       </div>
     </div>
   );

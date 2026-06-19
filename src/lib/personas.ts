@@ -1,6 +1,6 @@
-// 人格與維度詞彙 —— 鏡像主站 travelmbti（src/lib/personas.ts、dimensions.ts）。
-// 商品配對用：商品可掛多個 persona code，並可給 8 維 target profile（0–100 錨點）。
-// V2 再用與主站相同的 RMS 距離把商品配到人格；MVP 先人工掛 code。
+// 人格與維度詞彙 + 8 維 profile 錨點 —— 鏡像主站 travelmbti（src/lib/personas.ts、dimensions.ts）。
+// 商品配對：商品可掛多個 persona code，並可給 8 維 target profile（0–100 錨點）。
+// V2 用與主站相同的 RMS 距離把商品配到人格（見 scoring.ts）。
 
 export const DIMENSION_IDS = [
   "pace",
@@ -25,33 +25,33 @@ export const DIMENSIONS: { id: DimensionId; name: string; high: string; low: str
   { id: "foodie", name: "吃貨魂", high: "為食而生", low: "吃飽就好" },
 ];
 
-/** 商品的目標人格傾向（8 維，0–100 錨點，只填想錨的維度）。 */
+/** 商品 / 人格的 8 維傾向（0–100 錨點，只填想錨的維度）。 */
 export type TargetProfile = Partial<Record<DimensionId, number>>;
 
-// 22 人格。eggOnly = 彩蛋型（LIAR/FULL/NPC/PREP/GRGS），不適合當商品鎖定客群 → 不進標籤下拉。
+// 22 人格 + profile 錨點（鏡像主站）。eggOnly = 彩蛋型，不進商品標籤下拉，也不參與商品配對建議。
 export const PERSONAS = [
-  { code: "RUSH", title: "鐵腿特種兵指揮官", eggOnly: false },
-  { code: "LAZY", title: "飯店廢人", eggOnly: false },
-  { code: "OBEY", title: "聽勸俠", eggOnly: false },
-  { code: "COOL", title: "優越仔", eggOnly: false },
-  { code: "FLEX", title: "限動洗版王", eggOnly: false },
-  { code: "BURN", title: "報復性消費家", eggOnly: false },
-  { code: "POOR", title: "金牌打野", eggOnly: false },
-  { code: "DAZI", title: "朋友王", eggOnly: false },
-  { code: "SOLO", title: "i 人獨旅修行者", eggOnly: false },
-  { code: "WASH", title: "班味洗滌劑", eggOnly: false },
-  { code: "WORK", title: "帶薪出國上班族", eggOnly: false },
-  { code: "GRND", title: "窮鬼鐵人", eggOnly: false },
-  { code: "LUXE", title: "神隱度假貴婦", eggOnly: false },
-  { code: "BUDD", title: "佛系隨緣仔", eggOnly: false },
-  { code: "FOOD", title: "美食特攻隊", eggOnly: false },
-  { code: "GULA", title: "窮鬼美食家", eggOnly: false },
-  { code: "HAUL", title: "人形代購行李箱", eggOnly: false },
-  { code: "PREP", title: "攻略課代表", eggOnly: true },
-  { code: "LIAR", title: "泉哥", eggOnly: true },
-  { code: "FULL", title: "我全都要貪心怪", eggOnly: true },
-  { code: "NPC", title: "NPC", eggOnly: true },
-  { code: "GRGS", title: "古拉格斯", eggOnly: true },
+  { code: "RUSH", title: "鐵腿特種兵指揮官", eggOnly: false, profile: { pace: 95, planning: 85 } },
+  { code: "LAZY", title: "飯店廢人", eggOnly: false, profile: { pace: 8, workleak: 15 } },
+  { code: "OBEY", title: "聽勸俠", eggOnly: false, profile: { planning: 8, content: 75 } },
+  { code: "COOL", title: "優越仔", eggOnly: false, profile: { content: 8, social: 22 } },
+  { code: "FLEX", title: "限動洗版王", eggOnly: false, profile: { content: 95, social: 78 } },
+  { code: "BURN", title: "報復性消費家", eggOnly: false, profile: { budget: 95 } },
+  { code: "POOR", title: "金牌打野", eggOnly: false, profile: { budget: 8 } },
+  { code: "DAZI", title: "朋友王", eggOnly: false, profile: { social: 95 } },
+  { code: "SOLO", title: "i 人獨旅修行者", eggOnly: false, profile: { social: 6 } },
+  { code: "WASH", title: "班味洗滌劑", eggOnly: false, profile: { workleak: 6 } },
+  { code: "WORK", title: "帶薪出國上班族", eggOnly: false, profile: { workleak: 95 } },
+  { code: "GRND", title: "窮鬼鐵人", eggOnly: false, profile: { pace: 90, budget: 12 } },
+  { code: "LUXE", title: "神隱度假貴婦", eggOnly: false, profile: { pace: 12, budget: 92, workleak: 18 } },
+  { code: "BUDD", title: "佛系隨緣仔", eggOnly: false, profile: { planning: 15 } },
+  { code: "FOOD", title: "美食特攻隊", eggOnly: false, profile: { foodie: 95 } },
+  { code: "GULA", title: "窮鬼美食家", eggOnly: false, profile: { foodie: 90, budget: 12 } },
+  { code: "HAUL", title: "人形代購行李箱", eggOnly: false, profile: { social: 75, budget: 62 } },
+  { code: "PREP", title: "攻略課代表", eggOnly: true, profile: { planning: 95 } },
+  { code: "LIAR", title: "泉哥", eggOnly: true, profile: { pigeon: 95 } },
+  { code: "FULL", title: "我全都要貪心怪", eggOnly: true, profile: { pace: 90, budget: 88, content: 88, social: 85 } },
+  { code: "NPC", title: "NPC", eggOnly: true, profile: { pace: 50, planning: 50, budget: 50, social: 50, content: 50, workleak: 50, pigeon: 50, foodie: 50 } },
+  { code: "GRGS", title: "古拉格斯", eggOnly: true, profile: { foodie: 90, social: 65 } },
 ] as const;
 
 export type PersonaCode = (typeof PERSONAS)[number]["code"];
@@ -67,6 +67,11 @@ export function isPersonaCode(x: string): x is PersonaCode {
 
 export function personaTitle(code: string): string {
   return PERSONAS.find((p) => p.code === code)?.title ?? code;
+}
+
+/** 取某人格的 8 維 profile 錨點（給 scoring 的 RMS 配對用）。 */
+export function personaProfile(code: string): TargetProfile {
+  return (PERSONAS.find((p) => p.code === code)?.profile ?? {}) as TargetProfile;
 }
 
 /** 過濾出合法人格碼（給匯入/表單清洗用）。 */

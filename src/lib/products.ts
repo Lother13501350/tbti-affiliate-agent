@@ -274,8 +274,11 @@ export async function updateCuration(
     audience?: string[];
     budgetTier?: string | null;
     category?: string | null;
+    city?: string | null;
+    countryCode?: string | null;
     targetProfile?: TargetProfile | null;
     recommendScore?: number | null;
+    classificationConfidence?: number | null;
     needsReview?: boolean;
   },
 ): Promise<Product | null> {
@@ -283,15 +286,18 @@ export async function updateCuration(
   await ensureSchema();
   const rows = await sql`
     UPDATE affiliate_products SET
-      personas        = COALESCE(${patch.personas ? JSON.stringify(patch.personas) : null}::jsonb, personas),
-      scenarios       = COALESCE(${patch.scenarios ? JSON.stringify(patch.scenarios) : null}::jsonb, scenarios),
-      audience        = COALESCE(${patch.audience ? JSON.stringify(patch.audience) : null}::jsonb, audience),
-      budget_tier     = COALESCE(${patch.budgetTier ?? null}, budget_tier),
-      category        = COALESCE(${patch.category ?? null}, category),
-      target_profile  = COALESCE(${patch.targetProfile == null ? null : JSON.stringify(patch.targetProfile)}::jsonb, target_profile),
-      recommend_score = COALESCE(${patch.recommendScore ?? null}, recommend_score),
-      needs_review    = COALESCE(${patch.needsReview ?? null}, needs_review),
-      updated_at      = now()
+      personas                  = COALESCE(${patch.personas ? JSON.stringify(patch.personas) : null}::jsonb, personas),
+      scenarios                 = COALESCE(${patch.scenarios ? JSON.stringify(patch.scenarios) : null}::jsonb, scenarios),
+      audience                  = COALESCE(${patch.audience ? JSON.stringify(patch.audience) : null}::jsonb, audience),
+      budget_tier               = COALESCE(${patch.budgetTier ?? null}, budget_tier),
+      category                  = COALESCE(${patch.category ?? null}, category),
+      city                      = COALESCE(${patch.city ?? null}, city),
+      country_code              = COALESCE(${patch.countryCode ?? null}, country_code),
+      target_profile            = COALESCE(${patch.targetProfile == null ? null : JSON.stringify(patch.targetProfile)}::jsonb, target_profile),
+      recommend_score           = COALESCE(${patch.recommendScore ?? null}, recommend_score),
+      classification_confidence = COALESCE(${patch.classificationConfidence ?? null}, classification_confidence),
+      needs_review              = COALESCE(${patch.needsReview ?? null}, needs_review),
+      updated_at                = now()
     WHERE id = ${id} RETURNING *`;
   return rows[0] ? rowToProduct(rows[0]) : null;
 }

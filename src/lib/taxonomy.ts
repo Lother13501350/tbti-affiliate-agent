@@ -18,7 +18,7 @@ export const CATEGORIES = [
   { code: "other", label: "其他" },
 ] as const;
 export type CategoryCode = (typeof CATEGORIES)[number]["code"];
-export const CATEGORY_CODES = CATEGORIES.map((c) => c.code);
+export const CATEGORY_CODES: readonly string[] = CATEGORIES.map((c) => c.code);
 
 // 商品生命週期（規格 §6）。canDisplay = 是否可在站上曝光。
 export const PRODUCT_STATUSES = [
@@ -47,7 +47,7 @@ export const SCENARIOS = [
   { code: "in_destination", label: "當地活動" },
   { code: "impulse", label: "旅途中臨時購買" },
 ] as const;
-export const SCENARIO_CODES = SCENARIOS.map((s) => s.code);
+export const SCENARIO_CODES: readonly string[] = SCENARIOS.map((s) => s.code);
 
 // 預算級距（規格 §10）
 export const BUDGET_TIERS = [
@@ -57,7 +57,7 @@ export const BUDGET_TIERS = [
   { code: "high", label: "高價" },
   { code: "luxury", label: "奢華" },
 ] as const;
-export const BUDGET_TIER_CODES = BUDGET_TIERS.map((b) => b.code);
+export const BUDGET_TIER_CODES: readonly string[] = BUDGET_TIERS.map((b) => b.code);
 
 // 客群（規格 §10）
 export const AUDIENCES = [
@@ -69,7 +69,7 @@ export const AUDIENCES = [
   { code: "parent_child", label: "親子" },
   { code: "elder_friendly", label: "長輩友善" },
 ] as const;
-export const AUDIENCE_CODES = AUDIENCES.map((a) => a.code);
+export const AUDIENCE_CODES: readonly string[] = AUDIENCES.map((a) => a.code);
 
 // 站內版位（決定 SubId 的 placement 段，規格 §13,14）
 export const PLACEMENTS = [
