@@ -5,9 +5,7 @@ import type { ProductStatus } from "./taxonomy";
 // affiliate_products —— 統一商品主表（規格 §4,5,6,7-11,17）。
 // 三平台欄位不同 → Adapter 先轉成這個統一形狀再落庫。多值欄位一律用 jsonb（避免 array 編碼歧義）。
 
-const ensureSchema = once(async () => {
-  if (!sql) return;
-  await sql`CREATE TABLE IF NOT EXISTS affiliate_products (
+export const PRODUCT_TABLE_SQL = `CREATE TABLE IF NOT EXISTS affiliate_products (
     id                        text PRIMARY KEY,
     platform                  text NOT NULL,
     external_product_id       text,
@@ -38,6 +36,10 @@ const ensureSchema = once(async () => {
     updated_at                timestamptz NOT NULL DEFAULT now(),
     last_checked_at           timestamptz
   )`;
+
+const ensureSchema = once(async () => {
+  if (!sql) return;
+  await sql.query(PRODUCT_TABLE_SQL);
   await sql`CREATE INDEX IF NOT EXISTS idx_aff_products_status ON affiliate_products(status)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_aff_products_platform ON affiliate_products(platform)`;
   await sql`CREATE INDEX IF NOT EXISTS idx_aff_products_city ON affiliate_products(city)`;
@@ -147,7 +149,10 @@ function rowToProduct(r: any): Product {
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 /** 同平台同 external id → 同一個 id（自動去重，規格 §15）；無 external id → 新生成。 */
-export function makeProductId(platform: string, externalId?: string | null): string {
+export function makeProductId(
+  platform: string,
+  externalId?: string | null,
+): string {
   const p = platform.trim().toLowerCase();
   if (externalId && externalId.trim()) return `${p}:${externalId.trim()}`;
   return `${p}:${crypto.randomUUID().slice(0, 12)}`;
@@ -157,7 +162,9 @@ export function makeProductId(platform: string, externalId?: string | null): str
  * 落庫一個商品。同 id 已存在 → 只更新「平台來源欄位」，保留人工策展欄位
  * （status / personas / 各種標籤 / recommend_score 不被匯入覆蓋）。
  */
-export async function upsertProduct(input: ProductInput): Promise<Product | null> {
+export async function upsertProduct(
+  input: ProductInput,
+): Promise<Product | null> {
   if (!sql) return null;
   await ensureSchema();
   const id = input.id ?? makeProductId(input.platform, input.externalProductId);
@@ -249,7 +256,10 @@ export async function getProduct(id: string): Promise<Product | null> {
   return rows[0] ? rowToProduct(rows[0]) : null;
 }
 
-export async function setStatus(id: string, status: ProductStatus): Promise<Product | null> {
+export async function setStatus(
+  id: string,
+  status: ProductStatus,
+): Promise<Product | null> {
   if (!sql) return null;
   await ensureSchema();
   const rows = await sql`
@@ -306,7 +316,8 @@ export async function updateCuration(
 export async function statusCounts(): Promise<Record<string, number>> {
   if (!sql) return {};
   await ensureSchema();
-  const rows = await sql`SELECT status, COUNT(*)::int AS n FROM affiliate_products GROUP BY status`;
+  const rows =
+    await sql`SELECT status, COUNT(*)::int AS n FROM affiliate_products GROUP BY status`;
   const out: Record<string, number> = {};
   for (const r of rows) out[r.status] = Number(r.n);
   return out;
@@ -323,3 +334,5 @@ export async function listActiveForCheck(limit = 500): Promise<Product[]> {
     LIMIT ${limit}`;
   return rows.map(rowToProduct);
 }
+
+export { ensureSchema as ensureProductSchema };

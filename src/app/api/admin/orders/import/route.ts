@@ -2,6 +2,7 @@ import { adminGuard } from "@/lib/admin-auth";
 import { parseCsv } from "@/lib/csv";
 import { adapterById } from "@/lib/adapters";
 import { importOrders } from "@/lib/orders";
+import { prepareOrderCsv } from "@/lib/workflows";
 import { audit } from "@/lib/audit";
 
 export const runtime = "nodejs";
@@ -18,9 +19,27 @@ export async function POST(req: Request) {
   } catch {
     return Response.json({ error: "invalid json" }, { status: 400 });
   }
-  if (!body.platform) return Response.json({ error: "missing platform" }, { status: 400 });
-  if (!body.csv) return Response.json({ error: "missing csv" }, { status: 400 });
+  if (!body || typeof body.platform !== "string" || !body.platform)
+    return Response.json({ error: "missing platform" }, { status: 400 });
+  if (typeof body.csv !== "string" || !body.csv)
+    return Response.json({ error: "missing csv" }, { status: 400 });
+  if (
+    body.source != null &&
+    (typeof body.source !== "string" || body.source.length > 200)
+  )
+    return Response.json({ error: "invalid source" }, { status: 400 });
 
+  try {
+    prepareOrderCsv(body.platform, body.csv);
+  } catch {
+    return Response.json(
+      {
+        error: "invalid report",
+        hint: "Check platform, order IDs, amounts, and ISO dates.",
+      },
+      { status: 400 },
+    );
+  }
   const adapter = adapterById(body.platform);
   const rows = parseCsv(body.csv);
   const orders = adapter.parseOrderReport(rows);

@@ -1,0 +1,538 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T09:14:54.223854+00:00",
+  "title": "Design System: TBTI Affiliate Agent",
+  "extensions": {
+    "colorMeta": {
+      "demo-action": {
+        "role": "primary",
+        "displayName": "Operations Green",
+        "canonical": "#17644b",
+        "tonalRamp": [
+          "oklch(15% 0.08386 166.45)",
+          "oklch(26% 0.08386 166.45)",
+          "oklch(38% 0.08386 166.45)",
+          "oklch(49% 0.08386 166.45)",
+          "oklch(61% 0.08386 166.45)",
+          "oklch(72% 0.08386 166.45)",
+          "oklch(84% 0.08386 166.45)",
+          "oklch(95% 0.08386 166.45)"
+        ]
+      },
+      "demo-action-hover": {
+        "role": "primary",
+        "displayName": "Deep Operations Green",
+        "canonical": "#114e3b",
+        "tonalRamp": [
+          "oklch(15% 0.06911 167.59)",
+          "oklch(26% 0.06911 167.59)",
+          "oklch(38% 0.06911 167.59)",
+          "oklch(49% 0.06911 167.59)",
+          "oklch(61% 0.06911 167.59)",
+          "oklch(72% 0.06911 167.59)",
+          "oklch(84% 0.06911 167.59)",
+          "oklch(95% 0.06911 167.59)"
+        ]
+      },
+      "demo-ink": {
+        "role": "neutral",
+        "displayName": "Green Ink",
+        "canonical": "#19352e",
+        "tonalRamp": [
+          "oklch(15% 0.03666 175.63)",
+          "oklch(26% 0.03666 175.63)",
+          "oklch(38% 0.03666 175.63)",
+          "oklch(49% 0.03666 175.63)",
+          "oklch(61% 0.03666 175.63)",
+          "oklch(72% 0.03666 175.63)",
+          "oklch(84% 0.03666 175.63)",
+          "oklch(95% 0.03666 175.63)"
+        ]
+      },
+      "demo-muted": {
+        "role": "neutral",
+        "displayName": "Muted Green Ink",
+        "canonical": "#4b615a",
+        "tonalRamp": [
+          "oklch(15% 0.02887 173.60)",
+          "oklch(26% 0.02887 173.60)",
+          "oklch(38% 0.02887 173.60)",
+          "oklch(49% 0.02887 173.60)",
+          "oklch(61% 0.02887 173.60)",
+          "oklch(72% 0.02887 173.60)",
+          "oklch(84% 0.02887 173.60)",
+          "oklch(95% 0.02887 173.60)"
+        ]
+      },
+      "demo-canvas": {
+        "role": "neutral",
+        "displayName": "Quiet Green Canvas",
+        "canonical": "#f7f9f7",
+        "tonalRamp": [
+          "oklch(15% 0.00337 145.55)",
+          "oklch(26% 0.00337 145.55)",
+          "oklch(38% 0.00337 145.55)",
+          "oklch(49% 0.00337 145.55)",
+          "oklch(61% 0.00337 145.55)",
+          "oklch(72% 0.00337 145.55)",
+          "oklch(84% 0.00337 145.55)",
+          "oklch(95% 0.00337 145.55)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "White Surface",
+        "canonical": "white",
+        "tonalRamp": [
+          "oklch(15% 0.00000 89.88)",
+          "oklch(26% 0.00000 89.88)",
+          "oklch(38% 0.00000 89.88)",
+          "oklch(49% 0.00000 89.88)",
+          "oklch(61% 0.00000 89.88)",
+          "oklch(72% 0.00000 89.88)",
+          "oklch(84% 0.00000 89.88)",
+          "oklch(95% 0.00000 89.88)"
+        ]
+      },
+      "demo-line": {
+        "role": "neutral",
+        "displayName": "Divider Green",
+        "canonical": "#d8e1db",
+        "tonalRamp": [
+          "oklch(15% 0.01258 156.98)",
+          "oklch(26% 0.01258 156.98)",
+          "oklch(38% 0.01258 156.98)",
+          "oklch(49% 0.01258 156.98)",
+          "oklch(61% 0.01258 156.98)",
+          "oklch(72% 0.01258 156.98)",
+          "oklch(84% 0.01258 156.98)",
+          "oklch(95% 0.01258 156.98)"
+        ]
+      },
+      "demo-control-line": {
+        "role": "neutral",
+        "displayName": "Control Stroke",
+        "canonical": "#b4c6bb",
+        "tonalRamp": [
+          "oklch(15% 0.02487 159.01)",
+          "oklch(26% 0.02487 159.01)",
+          "oklch(38% 0.02487 159.01)",
+          "oklch(49% 0.02487 159.01)",
+          "oklch(61% 0.02487 159.01)",
+          "oklch(72% 0.02487 159.01)",
+          "oklch(84% 0.02487 159.01)",
+          "oklch(95% 0.02487 159.01)"
+        ]
+      },
+      "demo-control-hover": {
+        "role": "neutral",
+        "displayName": "Soft Hover Fill",
+        "canonical": "#e7efe9",
+        "tonalRamp": [
+          "oklch(15% 0.01165 153.67)",
+          "oklch(26% 0.01165 153.67)",
+          "oklch(38% 0.01165 153.67)",
+          "oklch(49% 0.01165 153.67)",
+          "oklch(61% 0.01165 153.67)",
+          "oklch(72% 0.01165 153.67)",
+          "oklch(84% 0.01165 153.67)",
+          "oklch(95% 0.01165 153.67)"
+        ]
+      },
+      "demo-control-active": {
+        "role": "neutral",
+        "displayName": "Soft Active Fill",
+        "canonical": "#d8e6dc",
+        "tonalRamp": [
+          "oklch(15% 0.02007 154.88)",
+          "oklch(26% 0.02007 154.88)",
+          "oklch(38% 0.02007 154.88)",
+          "oklch(49% 0.02007 154.88)",
+          "oklch(61% 0.02007 154.88)",
+          "oklch(72% 0.02007 154.88)",
+          "oklch(84% 0.02007 154.88)",
+          "oklch(95% 0.02007 154.88)"
+        ]
+      },
+      "demo-table-head": {
+        "role": "neutral",
+        "displayName": "Table Wash",
+        "canonical": "#eaf0eb",
+        "tonalRamp": [
+          "oklch(15% 0.00919 150.69)",
+          "oklch(26% 0.00919 150.69)",
+          "oklch(38% 0.00919 150.69)",
+          "oklch(49% 0.00919 150.69)",
+          "oklch(61% 0.00919 150.69)",
+          "oklch(72% 0.00919 150.69)",
+          "oklch(84% 0.00919 150.69)",
+          "oklch(95% 0.00919 150.69)"
+        ]
+      },
+      "demo-focus": {
+        "role": "neutral",
+        "displayName": "Focus Green",
+        "canonical": "#256b52",
+        "tonalRamp": [
+          "oklch(15% 0.08116 166.02)",
+          "oklch(26% 0.08116 166.02)",
+          "oklch(38% 0.08116 166.02)",
+          "oklch(49% 0.08116 166.02)",
+          "oklch(61% 0.08116 166.02)",
+          "oklch(72% 0.08116 166.02)",
+          "oklch(84% 0.08116 166.02)",
+          "oklch(95% 0.08116 166.02)"
+        ]
+      },
+      "demo-status-neutral": {
+        "role": "semantic",
+        "displayName": "Neutral Status",
+        "canonical": "#42584b",
+        "tonalRamp": [
+          "oklch(15% 0.03435 158.68)",
+          "oklch(26% 0.03435 158.68)",
+          "oklch(38% 0.03435 158.68)",
+          "oklch(49% 0.03435 158.68)",
+          "oklch(61% 0.03435 158.68)",
+          "oklch(72% 0.03435 158.68)",
+          "oklch(84% 0.03435 158.68)",
+          "oklch(95% 0.03435 158.68)"
+        ]
+      },
+      "demo-status-positive": {
+        "role": "semantic",
+        "displayName": "Positive Status",
+        "canonical": "#15573a",
+        "tonalRamp": [
+          "oklch(15% 0.08169 159.88)",
+          "oklch(26% 0.08169 159.88)",
+          "oklch(38% 0.08169 159.88)",
+          "oklch(49% 0.08169 159.88)",
+          "oklch(61% 0.08169 159.88)",
+          "oklch(72% 0.08169 159.88)",
+          "oklch(84% 0.08169 159.88)",
+          "oklch(95% 0.08169 159.88)"
+        ]
+      },
+      "demo-status-negative": {
+        "role": "semantic",
+        "displayName": "Negative Status",
+        "canonical": "#96342b",
+        "tonalRamp": [
+          "oklch(15% 0.13349 28.50)",
+          "oklch(26% 0.13349 28.50)",
+          "oklch(38% 0.13349 28.50)",
+          "oklch(49% 0.13349 28.50)",
+          "oklch(61% 0.13349 28.50)",
+          "oklch(72% 0.13349 28.50)",
+          "oklch(84% 0.13349 28.50)",
+          "oklch(95% 0.13349 28.50)"
+        ]
+      },
+      "demo-status-pending": {
+        "role": "semantic",
+        "displayName": "Pending Status",
+        "canonical": "#76531a",
+        "tonalRamp": [
+          "oklch(15% 0.08532 75.55)",
+          "oklch(26% 0.08532 75.55)",
+          "oklch(38% 0.08532 75.55)",
+          "oklch(49% 0.08532 75.55)",
+          "oklch(61% 0.08532 75.55)",
+          "oklch(72% 0.08532 75.55)",
+          "oklch(84% 0.08532 75.55)",
+          "oklch(95% 0.08532 75.55)"
+        ]
+      },
+      "operations-ink": {
+        "role": "neutral",
+        "displayName": "Administration Ink",
+        "canonical": "oklch(20.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-muted": {
+        "role": "neutral",
+        "displayName": "Administration Muted Ink",
+        "canonical": "oklch(43.9% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-line": {
+        "role": "neutral",
+        "displayName": "Administration Divider",
+        "canonical": "oklch(92.2% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-hover": {
+        "role": "neutral",
+        "displayName": "Administration Hover",
+        "canonical": "oklch(97% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-dark-canvas": {
+        "role": "neutral",
+        "displayName": "Administration Dark Canvas",
+        "canonical": "oklch(14.5% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-dark-line": {
+        "role": "neutral",
+        "displayName": "Administration Dark Divider",
+        "canonical": "oklch(26.9% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "operations-dark-muted": {
+        "role": "neutral",
+        "displayName": "Administration Dark Muted Ink",
+        "canonical": "oklch(87% 0 none)",
+        "tonalRamp": [
+          "oklch(15% 0 none)",
+          "oklch(26% 0 none)",
+          "oklch(38% 0 none)",
+          "oklch(49% 0 none)",
+          "oklch(61% 0 none)",
+          "oklch(72% 0 none)",
+          "oklch(84% 0 none)",
+          "oklch(95% 0 none)"
+        ]
+      },
+      "demo-action-active": {
+        "role": "primary",
+        "displayName": "Pressed Operations Green",
+        "canonical": "#0d4231",
+        "tonalRamp": [
+          "oklch(15% 0.06221 166.96)",
+          "oklch(26% 0.06221 166.96)",
+          "oklch(38% 0.06221 166.96)",
+          "oklch(49% 0.06221 166.96)",
+          "oklch(61% 0.06221 166.96)",
+          "oklch(72% 0.06221 166.96)",
+          "oklch(84% 0.06221 166.96)",
+          "oklch(95% 0.06221 166.96)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default sample-workspace body; global family is inherited from operations."
+      },
+      "demo-heading": {
+        "displayName": "Demo Heading",
+        "purpose": "Sample-workspace task title only; 1.625rem at max-width 850px."
+      },
+      "section-title": {
+        "displayName": "Section Title",
+        "purpose": "Sample-workspace operational sections."
+      },
+      "item-title": {
+        "displayName": "Item Title",
+        "purpose": "Proposal headings."
+      },
+      "detail": {
+        "displayName": "Detail",
+        "purpose": "Descriptions, feedback, rationale, totals, and history."
+      },
+      "control": {
+        "displayName": "Control",
+        "purpose": "Demo buttons and native selects; primary buttons use weight 600."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "CSV label and table labels."
+      },
+      "status": {
+        "displayName": "Status",
+        "purpose": "Literal state words and compact metadata."
+      },
+      "csv": {
+        "displayName": "Csv",
+        "purpose": "Sample CSV content only."
+      }
+    },
+    "shadows": [],
+    "motion": [
+      {
+        "name": "demo-button-background",
+        "value": "background-color 0.15s",
+        "purpose": "Button hover/active response; disabled by prefers-reduced-motion: reduce."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "demo-stack",
+        "value": "850px"
+      },
+      {
+        "name": "demo-compact",
+        "value": "440px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Principal import or affirmative review action with a dedicated dark active fill.",
+      "html": "<button class=\"ds-btn-primary\">Import report</button>",
+      "css": ".ds-btn-primary{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.8125rem;line-height:1.4;padding:9px 12px;min-height:40px;border:1px solid #b4c6bb;border-radius:7px;cursor:pointer;transition:background-color .15s;background:#17644b;border-color:#17644b;color:white;font-weight:600;}.ds-btn-primary:hover{background:#114e3b;}.ds-btn-primary:active{background:#0d4231;}.ds-btn-primary:focus-visible{outline:3px solid #256b52;outline-offset:3px;}.ds-btn-primary:disabled{opacity:.55;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-btn-primary{transition:none;}}"
+    },
+    {
+      "name": "Supporting Action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Report loaders, reset, and rejection controls.",
+      "html": "<button class=\"ds-btn-secondary\">Reset workspace</button>",
+      "css": ".ds-btn-secondary{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.8125rem;line-height:1.4;padding:9px 12px;min-height:40px;border:1px solid #b4c6bb;border-radius:7px;cursor:pointer;transition:background-color .15s;background:white;color:#19352e;}.ds-btn-secondary:hover{background:#e7efe9;}.ds-btn-secondary:active{background:#d8e6dc;}.ds-btn-secondary:focus-visible{outline:3px solid #256b52;outline-offset:3px;}.ds-btn-secondary:disabled{opacity:.55;cursor:not-allowed;}@media(prefers-reduced-motion:reduce){.ds-btn-secondary{transition:none;}}"
+    },
+    {
+      "name": "Grouped Native Select",
+      "kind": "input",
+      "refersTo": "select",
+      "description": "Associated label and native select remain in one flex group when tools wrap.",
+      "html": "<div class=\"ds-field-group\"><label for=\"ds-platform\">Platform</label><select class=\"ds-select\" id=\"ds-platform\"><option>KKday</option><option>Klook</option><option>Trip.com</option></select></div>",
+      "css": ".ds-field-group{display:flex;align-items:center;gap:8px;color:#19352e;font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.8125rem;}.ds-select{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.8125rem;line-height:1.4;padding:9px 12px;min-height:40px;border:1px solid #b4c6bb;border-radius:7px;cursor:pointer;transition:background-color .15s;background:white;color:#19352e;}.ds-select:focus-visible{outline:3px solid #256b52;outline-offset:3px;}.ds-select:disabled{opacity:.55;cursor:not-allowed;}"
+    },
+    {
+      "name": "CSV Editor",
+      "kind": "input",
+      "refersTo": "csv-field",
+      "description": "Monospaced, resizable report content with an associated visible label.",
+      "html": "<label class=\"ds-csv-label\" for=\"ds-report\">Sample CSV · TWD · up to eight rows</label><textarea class=\"ds-csv\" id=\"ds-report\" spellcheck=\"false\">order_id,status,amount\nDEMO-101,confirmed,2400</textarea>",
+      "css": ".ds-csv-label{display:block;margin-bottom:7px;font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.8125rem;font-weight:600;color:#19352e;}.ds-csv{width:100%;min-height:185px;resize:vertical;background:white;color:#19352e;border:1px solid #b4c6bb;border-radius:8px;padding:12px;font:.75rem/1.7 ui-monospace,SFMono-Regular,monospace;caret-color:#17644b;}.ds-csv:focus-visible{outline:3px solid #256b52;outline-offset:3px;}@media(max-width:440px){.ds-csv{min-height:220px;}}"
+    },
+    {
+      "name": "Textual Status",
+      "kind": "custom",
+      "refersTo": "status-label",
+      "description": "A literal state word with semantic color; no pill or badge background.",
+      "html": "<span class=\"ds-status ds-status-positive\">completed</span>",
+      "css": ".ds-status{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;font-size:.75rem;line-height:1.55;text-transform:capitalize;color:#42584b;}.ds-status-positive{color:#15573a;}.ds-status-negative{color:#96342b;}.ds-status-pending{color:#76531a;}"
+    },
+    {
+      "name": "Resolved Review Row",
+      "kind": "custom",
+      "refersTo": "proposal-row",
+      "description": "Open review entry with title, status, rationale, evidence, and explicit outcome.",
+      "html": "<article class=\"ds-proposal\"><div class=\"ds-proposal-heading\"><h3>Review a railway-pass alternative</h3><span class=\"ds-proposal-status\">Approved</span></div><p>Consider an alternative railway pass.</p><p class=\"ds-evidence\">Advisory only: a decision does not replace the product.</p><p class=\"ds-outcome\">Acknowledged. No automatic replacement.</p></article>",
+      "css": ".ds-proposal{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;color:#19352e;line-height:1.55;padding:18px 0;border-bottom:1px solid #d8e1db;}.ds-proposal-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;}.ds-proposal h3{font-size:.9375rem;font-weight:650;margin:0;}.ds-proposal-status{font-size:.75rem;color:#42584b;}.ds-proposal p{font-size:.875rem;margin:8px 0;}.ds-proposal .ds-evidence{font-size:.8125rem;color:#4b615a;}.ds-proposal .ds-outcome{color:#15573a;}"
+    },
+    {
+      "name": "Administration Card",
+      "kind": "card",
+      "refersTo": "operations-card",
+      "description": "Existing neutral operations card, distinct from the divider-based demo sections.",
+      "html": "<div class=\"ds-operations-card\"><strong>有效訂單 / 訂單</strong><p>0 / 0</p></div>",
+      "css": ".ds-operations-card{font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;color:oklch(20.5% 0 none);background:white;border:1px solid color-mix(in oklab,currentColor 14%,transparent);border-radius:12px;padding:16px;}.ds-operations-card strong{font-size:.75rem;font-weight:400;}.ds-operations-card p{font-size:1.5rem;font-weight:700;font-variant-numeric:tabular-nums;margin:4px 0 0;}"
+    },
+    {
+      "name": "Administration Navigation",
+      "kind": "nav",
+      "description": "Incumbent neutral tab navigation; no new navigation was added to the demo.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"後台\"><a class=\"ds-nav-active\" href=\"#\" aria-current=\"page\">儀表板</a><a href=\"#\">商品</a><a href=\"#\">審核佇列</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:4px;font-family:ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", Roboto, \"Noto Sans TC\", \"PingFang TC\", \"Microsoft JhengHei\", sans-serif;}.ds-nav a{border-radius:6px;padding:6px 12px;font-size:.875rem;font-weight:500;text-decoration:none;color:oklch(43.9% 0 none);}.ds-nav a:hover{background:oklch(97% 0 none);}.ds-nav .ds-nav-active{background:oklch(20.5% 0 none);color:white;}@media(prefers-color-scheme:dark){.ds-nav a{color:oklch(87% 0 none);}.ds-nav a:hover{background:oklch(26.9% 0 none);}.ds-nav .ds-nav-active{background:white;color:oklch(20.5% 0 none);}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Operations Workbench",
+    "overview": "The Operations Workbench is a quiet, compact interface for inspecting records and making explicit decisions. The existing Chinese administration UI supplies the authority: system typography, neutral surfaces, restrained borders, readable tables, and small practical controls. The English sample workspace extends that grammar with a muted green action color and a slightly greener neutral canvas.\n\nThis document records the built `/demo` surface and the shared administration patterns sampled in `src/app/globals.css` and `src/app/admin/`. Tokens prefixed `demo-` and the demo typography hierarchy apply to the sample workspace. They do not replace the administration's Tailwind neutral palette, Chinese labels, or existing light/dark behavior. No new brand identity, display face, or imagery system has been introduced. The demo-specific composition remains in `.impeccable/surfaces/src-app-demo-page-tsx.md`.",
+    "keyCharacteristics": [
+      "Compact, readable operations density.",
+      "Thin dividers and tonal table headers rather than elevation.",
+      "Green-filled controls for the principal operation and positive decision.",
+      "Explicit status words, evidence, outcomes, and action receipts.",
+      "English sample workspace alongside the established Chinese administration UI."
+    ],
+    "rules": [
+      {
+        "name": "The Action Signal Rule",
+        "body": "Use the demo green fill for the principal operation and affirmative review decision. Supporting report loaders, resets, and rejection controls retain white surfaces.",
+        "section": "colors"
+      },
+      {
+        "name": "The Readable Record Rule",
+        "body": "Keep numbers tabular in tables and preserve literal status words alongside semantic color. CSV is the sole recurring monospace field in the demo.",
+        "section": "typography"
+      },
+      {
+        "name": "The Divider Rule",
+        "body": "Separate operational sections with thin borders and spacing. The sample workspace has no box shadows, gradients, or floating panels.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Explicit Outcome Rule",
+        "body": "Decision labels describe the permitted effect. An advisory alternative is acknowledged or rejected; it must not imply that a replacement has occurred.",
+        "section": "components"
+      }
+    ],
+    "dos": [
+      "Do preserve the system font stack and neutral administration styles when extending existing operations screens.",
+      "Do use the scoped demo tokens for new content inside the sample workspace.",
+      "Do keep labels physically grouped with their controls when a toolbar wraps.",
+      "Do preserve table semantics and horizontal scrolling on narrow screens.",
+      "Do show textual status, supporting evidence, and a visible outcome after a reviewed action.",
+      "Do retain the visible fictional-data and session/reset boundaries in the sample workspace."
+    ],
+    "donts": [
+      "Don't apply the demo green canvas and palette globally to administration screens.",
+      "Don't introduce a separate decorative display font, imagery, or depth treatment into this precise workflow extension.",
+      "Don't turn every section into a shadowed card; the demo's section dividers already establish hierarchy.",
+      "Don't communicate status or permission solely through color.",
+      "Don't describe an advisory acknowledgment as a product replacement."
+    ]
+  }
+}

@@ -1,54 +1,73 @@
 # TBTI Affiliate Agent
 
-An affiliate operations MVP for managing product links, attributing clicks, importing order reports, and reviewing AI optimization proposals.
+A full-stack affiliate operations MVP for importing orders, attributing commissions, and reviewing AI product changes.
 
-[Hosted service](https://tbti-affiliate-agent.vercel.app) · [Deployment](docs/affiliate-agent/DEPLOY.md) · [Design and scope](docs/affiliate-agent/PLAN.md)
+[Try the sample workspace](https://tbti-affiliate-demo.vercel.app/demo) · [Workflow and test evidence](docs/affiliate-agent/DEMO.md) · [Architecture](docs/affiliate-agent/PLAN.md) · [CI](https://github.com/Lother13501350/tbti-affiliate-agent/actions/workflows/build.yml)
 
-## Overview and status
+![Sample workspace with imported orders and a reviewed product change](docs/screenshots/demo-desktop.jpg)
 
-This service supports a travel-product operator's workflow: review products, compose affiliate links, track redirects, import platform CSV reports, and inspect commissions and unattributed orders. It is a Next.js application with an administration interface and Neon PostgreSQL storage.
+Actual browser capture on October 6, 2026. All orders, products, commissions, and suggestions are fictional. The operations interface remains in Traditional Chinese; the public demo uses English.
 
-The hosted instance is an operations environment, with protected admin routes. It is not an open interactive admin demo. The implementation is an **MVP**: there is no automated unit/integration test framework or published coverage, user, or revenue metric. The database connection is deployment-specific; the deployment guide recommends a dedicated database rather than assuming access to another product's database.
+## Try the workflow
 
-## Screenshot
+No account or API key is required. Every browser gets its own resettable sample session.
 
-![Administration interface without a database](docs/screenshots/admin-offline.jpg)
+1. **Import report:** four CSV rows produce three unique orders and one ignored duplicate.
+2. **Import it again:** the identical report is skipped; the order count stays at three.
+3. **Load status update → Import report:** existing orders change, including a refund. Eligible sample commission changes from TWD 280 to TWD 250.
+4. **Select Viewer → Check permission:** the server returns 403. Switching demo roles does not grant access to operations administration.
+5. **Select Reviewer → Approve boost:** the product score moves from 92 to its cap of 100. Rejecting a pause leaves the product unchanged; approving a replacement records an advisory decision without replacing it.
 
-Captured locally on October 6, 2026, with no database credentials. The visible zeros and empty table demonstrate the unconfigured state; they are not business results. Product UI remains in Traditional Chinese.
+**Reset workspace** restores the samples. Suggestions are fixed fixtures, so the demo makes no paid AI calls. Sessions expire after one hour.
 
-## Implemented features
+## What I maintain
 
-- Product lifecycle states, review queues, taxonomy, persona tags, and recommendation previews.
-- Affiliate link construction and platform-specific SubId adapters for KKday, Klook, Trip.com, and generic links.
-- Redirect tracking at `/go/<code>`; click logging is best-effort and does not block a valid redirect when logging fails.
-- CSV product/order imports, file-hash deduplication, and unique platform/order identifiers.
-- Revenue and attribution reports, broken-link checks, and product-coverage gaps.
-- Optional OpenAI classification and a Claude advisory optimizer whose proposals require review before application code executes them.
-- Daily health checks and metrics reports, with optional Discord delivery. The daily cron does **not** automatically fetch platform order reports.
+The Next.js admin and API workflows, PostgreSQL domain records, platform adapters, CSV normalization and attribution, constrained AI tools, and reviewed proposal execution. The portfolio extension adds an isolated public demo and executable evidence for duplicate imports, access boundaries, concurrency, and rollback behavior.
+
+The application remains an **MVP**. No user, revenue, throughput, or test-coverage percentage is claimed.
 
 ## Architecture
 
 ```text
-Admin UI -> guarded admin APIs -> domain modules -> Neon PostgreSQL
-Product CTA -> /go/<code> -> compose SubId -> log click -> affiliate platform
-Platform CSV -> adapter normalization -> order import -> attribution / revenue
-Daily cron -> link health + metrics -> optional Discord report
-Local Node host -> advisory optimizer -> pending proposals -> human review
+OPERATIONS
+Admin UI → shared-key guard → domain modules → Neon PostgreSQL
+CSV → platform adapter → validated records → atomic import function
+AI optimizer → pending proposal → human decision → atomic product + audit write
+Product CTA → /go/<code> → contextual SubId → best-effort click log → platform
+Daily cron → link health + metrics → optional Discord report
+
+PUBLIC DEMO (separate deployment)
+React workspace → /api/demo → shared normalization / decision rules
+                           → signed, compressed HttpOnly sample-session cookie
 ```
 
-The Claude Agent SDK runs on a local or other Node host; its native binary is excluded from Vercel function tracing. `/api/admin/optimize` is not a working serverless optimizer without that runtime. The agent cannot directly execute arbitrary writes. After approval, application code can pause, boost a bounded recommendation score, or retag a product; replacement and gap proposals remain advisory.
+The public demo uses server-validated cookie state and never connects to the operations database. Real database guarantees are tested separately against the **same PostgreSQL table/function definitions used by operations**. The cookie adapter is bounded to eight fictional orders and is not a concurrent, multi-user database: parallel tabs can overwrite the same sample session. See [storage boundaries](docs/affiliate-agent/DEMO.md).
+
+The optional Claude Agent SDK optimizer requires a local or other Node host; its native runtime is excluded from Vercel function tracing. The public demo demonstrates the review workflow with prepared suggestions, not live model quality.
+
+## Engineering decisions
+
+- **Atomic import rather than a file check followed by row writes.** A PostgreSQL advisory transaction lock serializes the same platform/report hash. `(platform, external_order_id)` identifies an order; changed reports update existing rows. A failed batch rolls back both orders and its import receipt.
+- **Approval is a state transition, not arbitrary execution.** A proposal row lock prevents replayed/concurrent decisions from applying twice. Product changes, proposal status, and audit persistence commit together. Boosts add 15 up to 100; replacements and gap suggestions stay advisory. Missing targets or failed audit writes leave the proposal pending.
+- **A public sample boundary independent of admin access.** The demo API verifies cookie signatures, expiry, origin, and roles on the server. Admin APIs fail closed without a configured key. Demo cookies and forged role fields cannot authorize operations requests.
+
+Review [workflow SQL](src/lib/workflow-sql.ts), [normalization and decisions](src/lib/workflows.ts), [demo handler](src/lib/demo/handler.ts), and [database tests](tests/postgres.integration.test.ts).
+
+## Implemented operations features
+
+Product lifecycle and review queues; affiliate URL/SubId adapters for KKday, Klook, Trip.com, and generic links; redirect tracking; product/order CSV imports; commission and attribution reports; broken-link checks and coverage gaps; optional OpenAI classification; reviewed Claude proposals; optional daily Discord reports. The cron does **not** download platform order reports.
 
 ## Tech stack
 
 | Layer | Implementation |
 | --- | --- |
-| Web | Next.js App Router, React, TypeScript, Tailwind CSS |
-| Database | Neon PostgreSQL HTTP client; lazy schema creation in domain modules |
-| Integrations | Platform adapters, CSV reports, Vercel Cron, optional Discord |
-| AI | OpenAI classification; Claude Agent SDK advisory proposals |
-| Verification | TypeScript, ESLint, production build, optional mutating smoke script |
+| Web / API | Next.js App Router, React, TypeScript, Zod |
+| Operations data | Neon PostgreSQL HTTP client, PL/pgSQL transactions |
+| Public samples | HMAC-signed compressed HttpOnly cookie, fixed fixtures |
+| AI / integration | OpenAI, Claude Agent SDK, CSV/platform adapters |
+| Delivery / testing | Vercel, GitHub Actions, Node test runner + tsx, PostgreSQL integration tests |
 
-## Getting started
+## Run locally
 
 Use Node.js 22 or 24 and npm.
 
@@ -60,56 +79,43 @@ cp .env.example .env.local
 npm run dev
 ```
 
-Without credentials, the public status page is available but database features are disabled. Set a local `ADMIN_KEY` to open `http://localhost:3000/admin?key=<your-local-key>`. With no admin key, admin pages and APIs return 403. Set `DATABASE_URL` for stored products, links, clicks, and orders.
+Open `http://localhost:3000/demo`. Development has a local-only signing fallback, so no database or AI credentials are needed. For a production build, configure a random `DEMO_SESSION_SECRET` of at least 32 characters; missing configuration returns 503.
 
-## Environment variables
-
-[.env.example](.env.example) contains blank credentials and development defaults.
-
-| Variable | Purpose / missing-value behavior |
-| --- | --- |
-| `DATABASE_URL` | Database features; missing value disables storage. |
-| `ADMIN_KEY` | Admin gate; missing value denies access. APIs also accept `x-admin-key`. |
-| `AGENT_WRITE_ENABLED` | Enables gated write paths; defaults to `false`. |
-| `CLICK_HASH_SALT` | Hashes session identifiers; missing value omits the session hash. |
-| `CRON_SECRET` | Bearer authorization for cron; production denies an unconfigured secret. |
-| `DISCORD_WEBHOOK_URL` | Optional external reports; otherwise logs locally. |
-| `NEXT_PUBLIC_SITE_URL` | Absolute recommendation/redirect URL generation. |
-| `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional classification and model selection. |
-| `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` | Optional local optimizer credentials. |
-| `ANTHROPIC_MODEL` | Optimizer model selection. |
-
-Admin page links currently carry the key in query parameters, which can appear in browser history or logs. This is an MVP authentication boundary, not multi-user identity/role management. Do not use real credentials in screenshots, issue reports, or shared URLs.
-
-Click records omit raw IP/email fields, but hashed identifiers and context are not a claim of irreversible anonymity. Deployment logs and hosting infrastructure have their own data-handling behavior.
+Operations require `DATABASE_URL` and `ADMIN_KEY`. Admin pages currently accept `?key=<your-local-key>`; APIs also accept `x-admin-key`. Query keys can appear in history/logs. This is shared-key MVP access, not individual accounts or production RBAC.
 
 ## Verification
 
+On October 6, 2026: **55 passing tests, zero skips**, plus passing typecheck, lint, and production build.
+
+| Suite | Checks | Evidence |
+| --- | ---: | --- |
+| `npm test` | 37 | CSV validation, status mapping, bounded decisions, signed sessions, role enforcement, admin denial |
+| `npm run test:db` | 16 | Real PostgreSQL import/decision SQL, concurrent requests, failure rollback, audit atomicity |
+| `npm run test:http` | 2 | Actual built Next.js server, cookies, full sample workflow, origin/session denial |
+
 ```bash
+npm test
 npm run typecheck
 npm run lint
 npm run build
+npm run test:http
 ```
 
-All three passed locally on October 6, 2026 without service credentials. These checks establish static/build validity, not database or affiliate-platform correctness. `scripts/e2e.mjs` calls admin APIs and can mutate products; read it and use an isolated database before running it. `scripts/db-check.mjs` also initializes/checks database state. Neither was run against production during the portfolio audit.
+For database checks, create an **exclusive local test database** on an already running PostgreSQL instance:
 
-## Project structure
-
-```text
-src/app/admin/          Administration pages
-src/app/api/admin/      Guarded management endpoints
-src/app/api/cron/daily/ Daily link health and metrics
-src/app/go/[code]/      Public redirect and click flow
-src/lib/adapters/      Platform link / order normalization
-src/lib/               Products, orders, clicks, scoring, AI, proposals
-scripts/               Imports, DB diagnostics, API smoke script
-docs/affiliate-agent/  Design and deployment documentation
+```bash
+createdb affiliate_test
+TEST_DATABASE_URL=postgresql://localhost/affiliate_test npm run test:db
 ```
 
-## Deployment and engineering highlights
+The database suite truncates its affiliate tables between tests. It refuses missing configuration, non-local hosts, database names that do not end in `_test`, or the operations `DATABASE_URL`. GitHub Actions provides an isolated PostgreSQL 16 service and runs all three suites plus static/build checks. Browser operation and desktop/mobile layout were also checked manually; there is no automated browser suite or published coverage measurement.
 
-Vercel serves the web app and HTTP endpoints; Neon stores operations data. `vercel.json` schedules the daily endpoint at 01:00 UTC. Configure production secrets on the hosting platform and keep the write switch disabled until the environment has been verified. See [deployment instructions](docs/affiliate-agent/DEPLOY.md).
+## Configuration and deployment
 
-The most useful code-review entry points are `src/lib/orders.ts` for import idempotency, `src/lib/adapters/` for normalization, `src/lib/optimizer.ts` for constrained tools, and `src/lib/proposals.ts` for reviewed execution.
+[.env.example](.env.example) lists the full configuration. The demo needs only `DEMO_SESSION_SECRET`. Operations use `DATABASE_URL`, `ADMIN_KEY`, `CLICK_HASH_SALT`, and `CRON_SECRET`; `AGENT_WRITE_ENABLED` defaults to false and gates selected automation paths, not all database writes. Discord and AI credentials are optional.
 
-Outstanding engineering work: domain/integration tests, controlled schema migrations, stronger admin identity, and dependency security updates. An October 6 npm audit reported vulnerable dependencies; passing the build does not resolve those advisories. No license file is currently included; public visibility alone does not grant a redistribution license.
+Deploy the public samples to a separate Vercel project using **`vercel.demo.json`**, which has no cron schedule. Operations use `vercel.json`, with daily checks at 01:00 UTC. [Deployment instructions](docs/affiliate-agent/DEPLOY.md) cover both environments and the database privileges required by the lazy schema helpers.
+
+## Remaining limits
+
+Versioned schema migrations and individual admin identities remain future work. Actual partner-report formats, live provider behavior, deployment data, and production load were not verified by these sample tests. Dependency advisories remain tracked; the Next.js runtime was updated during this work, but a passing build does not establish that every dependency is free of vulnerabilities. Click hashes are not a claim of irreversible anonymity. No license file is included.

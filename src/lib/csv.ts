@@ -40,6 +40,7 @@ export function parseCsv(input: string): CsvRow[] {
       field += c;
     }
   }
+  if (inQuotes) throw new Error("CSV has an unclosed quoted field");
   if (field.length > 0 || row.length > 0) {
     row.push(field);
     rows.push(row);

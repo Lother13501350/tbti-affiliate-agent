@@ -34,7 +34,9 @@ export const PRODUCT_STATUSES = [
 ] as const;
 export type ProductStatus = (typeof PRODUCT_STATUSES)[number]["code"];
 export const PRODUCT_STATUS_CODES = PRODUCT_STATUSES.map((s) => s.code);
-export const DISPLAYABLE_STATUSES = PRODUCT_STATUSES.filter((s) => s.canDisplay).map((s) => s.code);
+export const DISPLAYABLE_STATUSES = PRODUCT_STATUSES.filter(
+  (s) => s.canDisplay,
+).map((s) => s.code);
 
 // 使用情境 / 旅行階段（規格 §9）
 export const SCENARIOS = [
@@ -57,7 +59,9 @@ export const BUDGET_TIERS = [
   { code: "high", label: "高價" },
   { code: "luxury", label: "奢華" },
 ] as const;
-export const BUDGET_TIER_CODES: readonly string[] = BUDGET_TIERS.map((b) => b.code);
+export const BUDGET_TIER_CODES: readonly string[] = BUDGET_TIERS.map(
+  (b) => b.code,
+);
 
 // 客群（規格 §10）
 export const AUDIENCES = [
@@ -100,12 +104,14 @@ export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export function normalizeOrderStatus(raw: string): OrderStatus {
   const s = raw.trim().toLowerCase();
   if (!s) return "unknown";
-  if (/(complete|completed|fulfilled|settled|結算|已完成|完成)/.test(s)) return "completed";
-  if (/(confirm|confirmed|valid|已確認|確認|有效)/.test(s)) return "confirmed";
   if (/(refund|退款|退費)/.test(s)) return "refunded";
-  if (/(cancel|cancelled|canceled|void|取消)/.test(s)) return "cancelled";
+  if (/(cancel|void|取消)/.test(s)) return "cancelled";
   if (/(reject|declined|invalid|拒絕|無效)/.test(s)) return "rejected";
-  if (/(pending|processing|待|處理中|未確認)/.test(s)) return "pending";
+  if (/(pending|processing|unconfirmed|not confirmed|未確認|待|處理中)/.test(s))
+    return "pending";
+  if (/(complete|fulfilled|settled|結算|已完成|完成)/.test(s))
+    return "completed";
+  if (/(confirm|valid|已確認|確認|有效)/.test(s)) return "confirmed";
   return "unknown";
 }
 

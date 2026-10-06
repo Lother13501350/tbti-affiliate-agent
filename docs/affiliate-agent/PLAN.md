@@ -40,10 +40,14 @@ The optimizer receives read tools plus `submit_proposals`; it is not a general c
 
 The click schema omits raw IP/email columns; an optional salted hash links sessions. This is not an assertion that identifiers are mathematically anonymous or that infrastructure logs contain no personal data. Keep secrets out of URLs shared with others; admin navigation currently carries a query-string key.
 
-The code is an MVP. Dependency advisories, SQL integration behavior, admin identity, proposal decision concurrency, and schema migrations need further hardening before stronger reliability/security claims.
+The code is an MVP. SQL import and proposal concurrency now have executable integration evidence; dependency advisories, individual admin identity, and versioned schema migrations remain open limits.
 
 ## Verification and remaining work
 
-Typecheck, lint, and production build passed locally on October 6, 2026. No unit/integration framework or coverage measurement is present. The mutating `scripts/e2e.mjs` is a manual API smoke utility for an isolated environment, not a production-safe test suite.
+The portfolio extension adds a separate public sample deployment, server-validated signed sessions, and a workflow UI for duplicate imports and reviewed product changes. It uses fixed suggestions with no paid AI calls. Demo roles are separate from operations access, and its bounded cookie adapter is not the operations database.
 
-High-value follow-up work is deterministic tests for CSV normalization/SubId parsing, database tests for duplicate imports and concurrent proposal decisions, versioned migrations, and a read-only demonstration dataset. Planned automatic ingestion and broader platform API integrations should remain roadmap items until implemented and verified.
+The order import is one PostgreSQL function call: a platform/hash advisory transaction lock protects batch replay, order upserts count only actual changes, and receipt persistence shares the transaction. Reviewed decisions lock the proposal and affected product, then commit product mutation, terminal proposal state, and audit persistence together. Replayed decisions cannot apply an action again.
+
+On October 6, 2026, 37 domain/API tests, 16 actual PostgreSQL tests, and two built-server HTTP tests passed with zero skips. Typecheck, lint, and production build passed. GitHub Actions provisions its own PostgreSQL 16 service and runs the same checks. There is no coverage percentage or automated browser-suite claim. [Demo and test boundaries](DEMO.md) explain what the evidence establishes.
+
+Remaining work includes versioned migrations, individual admin identities, production load verification, and dependency advisory remediation. Automatic ingestion and broader platform API integrations remain roadmap items. The legacy mutating `scripts/e2e.mjs` still requires an isolated environment.

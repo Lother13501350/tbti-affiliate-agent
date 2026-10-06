@@ -1,15 +1,23 @@
 import { sql, once } from "./db";
-import { setStatus, updateCuration, getProduct } from "./products";
+import { ensureProductSchema } from "./products";
 import { cleanPersonaCodes } from "./personas";
-import { audit } from "./audit";
+import { PROPOSAL_DECISION_SQL } from "./workflow-sql";
+import { audit, ensureAuditSchema } from "./audit";
 
 // 優化建議（規格 §39-42）。Claude 代理只能「產生 pending 建議」，人工核准後才由這裡的
 // 決定論程式執行。可執行的動作刻意很小且安全：pause / boost / retag。
-// 絕不碰佣金、價格、排序權重。replace / add_gap 為純建議（核准=知悉，不自動執行）。
+// 不修改佣金或價格；boost 僅提高有上限的 recommendation score。
+// replace / add_gap 為純建議（核准=知悉，不自動執行）。
 
 export type ProposalKind = "pause" | "boost" | "retag" | "replace" | "add_gap";
 export const EXECUTABLE: ProposalKind[] = ["pause", "boost", "retag"];
-export const PROPOSAL_KINDS: ProposalKind[] = ["pause", "boost", "retag", "replace", "add_gap"];
+export const PROPOSAL_KINDS: ProposalKind[] = [
+  "pause",
+  "boost",
+  "retag",
+  "replace",
+  "add_gap",
+];
 
 export interface ProposalInput {
   kind: ProposalKind;
@@ -30,9 +38,7 @@ export interface Proposal extends ProposalInput {
   decidedAt: string | null;
 }
 
-const ensureSchema = once(async () => {
-  if (!sql) return;
-  await sql`CREATE TABLE IF NOT EXISTS affiliate_proposals (
+export const PROPOSAL_TABLE_SQL = `CREATE TABLE IF NOT EXISTS affiliate_proposals (
     id          text PRIMARY KEY,
     kind        text NOT NULL,
     product_id  text,
@@ -41,6 +47,10 @@ const ensureSchema = once(async () => {
     created_at  timestamptz NOT NULL DEFAULT now(),
     decided_at  timestamptz
   )`;
+
+const ensureSchema = once(async () => {
+  if (!sql) return;
+  await sql.query(PROPOSAL_TABLE_SQL);
   await sql`CREATE INDEX IF NOT EXISTS idx_aff_proposals_status ON affiliate_proposals(status)`;
 });
 
@@ -56,7 +66,7 @@ function rowToProposal(r: any): Proposal {
     decidedAt: r.decided_at ?? null,
     rationale: p.rationale ?? "",
     evidence: p.evidence ?? null,
-    personas: p.personas ?? null,
+    personas: p.personas ? cleanPersonaCodes(p.personas) : null,
     category: p.category ?? null,
     suggestedAlternativeId: p.suggestedAlternativeId ?? null,
     city: p.city ?? null,
@@ -65,7 +75,9 @@ function rowToProposal(r: any): Proposal {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export async function createProposals(list: ProposalInput[]): Promise<Proposal[]> {
+export async function createProposals(
+  list: ProposalInput[],
+): Promise<Proposal[]> {
   if (!sql || list.length === 0) return [];
   await ensureSchema();
   const out: Proposal[] = [];
@@ -75,7 +87,7 @@ export async function createProposals(list: ProposalInput[]): Promise<Proposal[]
     const payload = {
       rationale: p.rationale ?? "",
       evidence: p.evidence ?? null,
-      personas: p.personas ?? null,
+      personas: p.personas ? cleanPersonaCodes(p.personas) : null,
       category: p.category ?? null,
       suggestedAlternativeId: p.suggestedAlternativeId ?? null,
       city: p.city ?? null,
@@ -87,7 +99,12 @@ export async function createProposals(list: ProposalInput[]): Promise<Proposal[]
       RETURNING *`;
     if (rows[0]) out.push(rowToProposal(rows[0]));
   }
-  await audit({ entityType: "system", action: "proposals_created", actor: "agent", after: { count: out.length } });
+  await audit({
+    entityType: "system",
+    action: "proposals_created",
+    actor: "agent",
+    after: { count: out.length },
+  });
   return out;
 }
 
@@ -100,63 +117,35 @@ export async function listProposals(status?: string): Promise<Proposal[]> {
   return rows.map(rowToProposal);
 }
 
-/** 執行一條已核准建議（只有 EXECUTABLE 種類會真的動 DB）。 */
-async function execute(p: Proposal): Promise<string> {
-  if (!p.productId) return "no product to act on";
-  if (p.kind === "pause") {
-    await setStatus(p.productId, "paused");
-    return "product paused";
-  }
-  if (p.kind === "boost") {
-    const cur = await getProduct(p.productId);
-    const next = Math.min(100, (cur?.recommendScore ?? 50) + 15); // 有上限,避免暴衝
-    await updateCuration(p.productId, { recommendScore: next });
-    return `recommend_score → ${next}`;
-  }
-  if (p.kind === "retag") {
-    await updateCuration(p.productId, {
-      personas: p.personas ? cleanPersonaCodes(p.personas) : undefined,
-      category: p.category ?? undefined,
-    });
-    return "tags updated";
-  }
-  return "advisory only (no auto-execution)";
-}
+const ensureDecisionSchema = once(async () => {
+  await ensureSchema();
+  await ensureProductSchema();
+  await ensureAuditSchema();
+  if (sql) await sql.query(PROPOSAL_DECISION_SQL);
+});
 
+/** Approval, product mutation, and audit commit atomically. */
 export async function decide(
   id: string,
   decision: "approved" | "rejected",
 ): Promise<{ proposal: Proposal | null; effect?: string }> {
   if (!sql) return { proposal: null };
-  await ensureSchema();
-  const cur = (await sql`SELECT * FROM affiliate_proposals WHERE id = ${id}`)[0];
-  if (!cur) return { proposal: null };
-  const p = rowToProposal(cur);
-  if (p.status !== "pending") return { proposal: p, effect: "already decided" };
-
-  if (decision === "rejected") {
-    const rows = await sql`UPDATE affiliate_proposals SET status='rejected', decided_at=now() WHERE id=${id} RETURNING *`;
-    await audit({ entityType: "system", entityId: id, action: "proposal_rejected", actor: "admin", before: p });
-    return { proposal: rows[0] ? rowToProposal(rows[0]) : null };
-  }
-
-  const effect = await execute(p);
-  const finalStatus = EXECUTABLE.includes(p.kind) ? "applied" : "approved";
-  const rows = await sql`UPDATE affiliate_proposals SET status=${finalStatus}, decided_at=now() WHERE id=${id} RETURNING *`;
-  await audit({
-    entityType: p.productId ? "product" : "system",
-    entityId: p.productId ?? id,
-    action: `proposal_${p.kind}_applied`,
-    actor: "admin",
-    after: { proposal: p, effect },
-    approved: true,
-  });
-  return { proposal: rows[0] ? rowToProposal(rows[0]) : null, effect };
+  await ensureDecisionSchema();
+  const rows = await sql.query(
+    "SELECT affiliate_decide_proposal($1,$2) result",
+    [id, decision],
+  );
+  const r = rows[0].result;
+  return {
+    proposal: r.proposal ? rowToProposal(r.proposal) : null,
+    effect: r.effect,
+  };
 }
 
 export async function pendingCount(): Promise<number> {
   if (!sql) return 0;
   await ensureSchema();
-  const r = await sql`SELECT count(*)::int n FROM affiliate_proposals WHERE status='pending'`;
+  const r =
+    await sql`SELECT count(*)::int n FROM affiliate_proposals WHERE status='pending'`;
   return r[0] ? Number(r[0].n) : 0;
 }
