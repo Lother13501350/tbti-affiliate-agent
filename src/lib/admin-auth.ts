@@ -1,23 +1,30 @@
-import { ADMIN_KEY, adminEnabled } from "./env";
+import { timingSafeEqual } from "node:crypto";
+import { ADMIN_KEY } from "./env";
 
-// 後台密碼閘（比照主站 /admin/answers 的 ADMIN_KEY 模式）。
-// 未設 ADMIN_KEY → 一律拒絕（預設安全）。網址用 ?key=<值> 或 header x-admin-key。
+export function verifyAdminKey(
+  candidate: string | null | undefined,
+  configured: string,
+): boolean {
+  if (!configured || !candidate) return false;
+  const a = Buffer.from(candidate),
+    b = Buffer.from(configured);
+  return a.length === b.length && timingSafeEqual(a, b);
+}
 
+export function createAdminGuard(configured: string) {
+  return (req: Request): Response | null => {
+    const key =
+      new URL(req.url).searchParams.get("key") ??
+      req.headers.get("x-admin-key");
+    return verifyAdminKey(key, configured)
+      ? null
+      : Response.json({ error: "forbidden" }, { status: 403 });
+  };
+}
 export function isAdminKey(key: string | null | undefined): boolean {
-  if (!adminEnabled) return false;
-  return (key ?? "") === ADMIN_KEY;
+  return verifyAdminKey(key, ADMIN_KEY);
 }
-
 export function checkAdmin(req: Request): boolean {
-  const url = new URL(req.url);
-  const key = url.searchParams.get("key") ?? req.headers.get("x-admin-key") ?? "";
-  return isAdminKey(key);
+  return adminGuard(req) === null;
 }
-
-/** API 守門：未授權回 403 Response，授權回 null。 */
-export function adminGuard(req: Request): Response | null {
-  if (!checkAdmin(req)) {
-    return Response.json({ error: "forbidden" }, { status: 403 });
-  }
-  return null;
-}
+export const adminGuard = createAdminGuard(ADMIN_KEY);

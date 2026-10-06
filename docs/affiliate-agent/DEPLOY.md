@@ -6,7 +6,9 @@ The web service runs on Vercel, with affiliate data in Neon PostgreSQL. The Clau
 
 Use a dedicated database or a database role restricted to the required affiliate tables. Do not connect a new deployment to another product's production database by assumption. Domain modules lazily create `affiliate_*` tables and indexes; this repository does not have a versioned migration system.
 
-Install from the lockfile with `npm ci`, then run `npm run typecheck`, `npm run lint`, and `npm run build`. The October 6, 2026 audit passed those checks without credentials. Review current dependency advisories before public deployment.
+Install from the lockfile with `npm ci`. Run `npm test`, static checks, a build, and `npm run test:http`; run `npm run test:db` with an exclusive local database ending in `_test`. These checks passed on October 6, 2026. GitHub Actions runs them against its own PostgreSQL service. Review remaining dependency advisories before deployment.
+
+Schema setup now also creates/replaces the PL/pgSQL import and proposal-decision functions. The configured database role must be able to create/update the affiliate tables, indexes, and these functions, and execute the required writes. Functions use invoker privileges, not `SECURITY DEFINER`. Keep schema ownership controlled; a versioned migration system remains future work.
 
 ## Configure Vercel
 
@@ -37,3 +39,16 @@ Do not configure optimizer credentials on Vercel while its native binary remains
 ## External product integration
 
 The public `GET /api/recommend` endpoint returns ranked products and redirect URLs. A client product can consume this API without receiving database credentials. Any change to that client product or its deployment is a separate release decision.
+
+## Isolated public samples
+
+Create a separate Vercel project for the public workspace. Configure only a strong random `DEMO_SESSION_SECRET` (at least 32 characters). Do not attach operations database/admin, AI, partner, or Discord credentials. The public sample deployment needs no database and makes no paid model calls.
+
+```bash
+vercel link --project your-separate-demo-project
+vercel --prod --local-config vercel.demo.json
+```
+
+`vercel.demo.json` intentionally contains no cron schedule. Do not use the operations `vercel.json` for this deployment. If connecting Git-based deployment, configure the demo project's equivalent no-cron settings; the CLI command explicitly chooses the sample config. Verify `/demo`, import/replay/update, Viewer denial, approval/rejection, and reset. The production demo API returns 503 when its signing secret is absent.
+
+The published sample entry is https://tbti-affiliate-demo.vercel.app/demo. Its signed-cookie state is bounded and temporary; see [DEMO.md](DEMO.md) for limits. The operations service remains a separate environment.
