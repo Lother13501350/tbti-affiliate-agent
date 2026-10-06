@@ -1,65 +1,39 @@
-# 部署上線指南
+# Deployment
 
-## 架構：誰部署到哪
+The web service runs on Vercel, with affiliate data in Neon PostgreSQL. The Claude Agent SDK optimizer requires a local or other Node host because its native runtime is excluded from the Vercel function bundle.
 
-| 元件 | 跑在哪 |
-|---|---|
-| 主應用（後台 / 商品 / `/go` / 推薦 API / 匯入 / 每日 cron） | **Vercel**（獨立專案，與正式站分開） |
-| 資料庫 | **獨立 Neon**（`ep-autumn-surf…`，**不是**正式站那個） |
-| 「優化大腦」（Claude Agent SDK） | **不在 Vercel**（內含 ~215MB 原生執行檔，超過 serverless 函式上限）→ 本機 / 小型 Node 主機 / 排程 |
+## Prepare an isolated environment
 
-## 一次性準備
-- GitHub 帳號（這個 repo 跟 travelmbti 是**不同** repo）
-- 你的 Vercel 帳號
-- 獨立 Neon 的 `DATABASE_URL`
+Use a dedicated database or a database role restricted to the required affiliate tables. Do not connect a new deployment to another product's production database by assumption. Domain modules lazily create `affiliate_*` tables and indexes; this repository does not have a versioned migration system.
 
-## Step 1 — 推上 GitHub
-在 github.com 開一個新的 **private** repo（例如 `tbti-affiliate-agent`，不要勾選建立 README）。然後：
+Install from the lockfile with `npm ci`, then run `npm run typecheck`, `npm run lint`, and `npm run build`. The October 6, 2026 audit passed those checks without credentials. Review current dependency advisories before public deployment.
 
-```bash
-git remote add origin https://github.com/<你的帳號>/tbti-affiliate-agent.git
-git branch -M main
-git push -u origin main
-```
-> `.env.local`（含資料庫密碼）不會上傳 —— 已被 `.gitignore` 忽略。
+## Configure Vercel
 
-## Step 2 — 建 Vercel 專案 + 環境變數
-1. Vercel → **Add New → Project** → 選剛剛的 repo → **Import**
-2. Framework 自動偵測 Next.js，不用改
-3. **Environment Variables**（Production）填：
+Import this repository as a Next.js project. Set the following in the environment settings:
 
-| 變數 | 值 |
-|---|---|
-| `DATABASE_URL` | 你的**獨立** Neon pooled 連線字串 |
-| `ADMIN_KEY` | 一組強隨機字串 |
-| `CLICK_HASH_SALT` | 一組強隨機字串 |
-| `CRON_SECRET` | 一組強隨機字串（Vercel Cron 會自動帶上） |
-| `AGENT_WRITE_ENABLED` | `true` |
-| `NEXT_PUBLIC_SITE_URL` | 先留空，Step 4 補 |
-| `DISCORD_WEBHOOK_URL` | （選）要 Discord 日報才填 |
-| `OPENAI_API_KEY` | （選）有效的 key，要開 AI 分類才填 |
+- `DATABASE_URL`: the selected database connection string.
+- `ADMIN_KEY`: a strong random admin secret.
+- `CLICK_HASH_SALT`: a random value for session hashing.
+- `CRON_SECRET`: a random bearer secret for the daily endpoint.
+- `AGENT_WRITE_ENABLED=false`: retain the safe default until you intend to enable gated writes.
+- `NEXT_PUBLIC_SITE_URL`: the deployment's public origin.
+- Optional `DISCORD_WEBHOOK_URL` and `OPENAI_API_KEY`; use `OPENAI_MODEL` to select classification behavior.
 
-> ⚠️ **不要**把 Claude token（`CLAUDE_CODE_OAUTH_TOKEN` / `ANTHROPIC_API_KEY`）放 Vercel —— 優化大腦不在這裡跑。
-> ⚠️ `DATABASE_URL` **千萬別**填成正式站那條（`ep-summer-credit…`）。
+Never place secrets in Git, screenshots, query strings shared with others, or this document. The current admin page navigation uses a query-string key, so it should not be presented as production identity management.
 
-4. **Deploy**
+## Cron and verification
 
-## Step 3 — 確認
-- 開 `https://<你的網址>/` → 服務狀態頁
-- `https://<你的網址>/admin?key=<ADMIN_KEY>` → 後台
-- Vercel 專案 → **Settings → Cron Jobs** 應看到 `/api/cron/daily`（由 `vercel.json` 設定，每天 01:00 UTC）
+`vercel.json` defines `/api/cron/daily` at 01:00 UTC. The endpoint checks `Authorization: Bearer <CRON_SECRET>` and denies unconfigured production requests. It checks product links, computes metrics, and optionally sends Discord reports; platform order CSVs still require a separate import.
 
-## Step 4 — 補 `NEXT_PUBLIC_SITE_URL`
-把 Production 的 `NEXT_PUBLIC_SITE_URL` 設成正式網址（例：`https://tbti-affiliate-agent.vercel.app`），再 **Redeploy** 一次。這樣 `/api/recommend` 回的 `goUrl` 才是絕對網址（給主站商品卡 CTA 用）。
+After deployment, inspect the public status page, verify that unauthorized admin requests return 403, and confirm the environment/cron configuration. Perform product imports, classification, and proposal approval only in a deliberate operations test with isolated data. Do not use the mutating `scripts/e2e.mjs` against a production database to prove that a deployment works.
 
-## 優化大腦怎麼跑（非 Vercel）
-部署版的 `/api/admin/optimize` 會 graceful 失敗（binary 已排除、也未設 token），這是刻意的。需要分析時：
+## Local optimizer
 
-- **本機**：`.env.local` 放 `DATABASE_URL`（獨立庫）+ `CLAUDE_CODE_OAUTH_TOKEN` → `npm run dev` → 開 `/admin/proposals?key=…` → 按「讓 Claude 分析一輪」
-- **或** 之後架一台小型 Node 主機 / 排程定期跑（可再協助）
+Copy [.env.example](../../.env.example) to `.env.local`, select the intended database, configure the admin key, and provide either `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN`. Start `npm run dev` and use the proposals administration page. The SDK has read tools and a proposal-submission tool; accepted proposals are applied by application code after review.
 
-## 日後更新
-`git push` 到 `main` → Vercel 自動重新部署。
+Do not configure optimizer credentials on Vercel while its native binary remains excluded. For a separate Node host, retain the same review gate and write switch.
 
-## 主站整合（未來，需另行授權）
-正式站 tbtitest.com 要顯示商品卡時，呼叫本服務的 **公開** `GET /api/recommend?persona=…&city=…`，拿排序後商品 + `goUrl`。主站**不需要**本服務的資料庫權限。此步驟會動到正式站 repo，屬上線動作。
+## External product integration
+
+The public `GET /api/recommend` endpoint returns ranked products and redirect URLs. A client product can consume this API without receiving database credentials. Any change to that client product or its deployment is a separate release decision.

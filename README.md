@@ -1,79 +1,115 @@
 # TBTI Affiliate Agent
 
-An affiliate operations service built with **TypeScript, Next.js, React, and Neon PostgreSQL**. It combines product management, redirect-based click tracking, CSV order imports, revenue reporting, and AI-assisted optimization proposals reviewed by a human.
+An affiliate operations MVP for managing product links, attributing clicks, importing order reports, and reviewing AI optimization proposals.
 
-## Engineering overview
+[Hosted service](https://tbti-affiliate-agent.vercel.app) · [Deployment](docs/affiliate-agent/DEPLOY.md) · [Design and scope](docs/affiliate-agent/PLAN.md)
 
-| Area | Implementation |
+## Overview and status
+
+This service supports a travel-product operator's workflow: review products, compose affiliate links, track redirects, import platform CSV reports, and inspect commissions and unattributed orders. It is a Next.js application with an administration interface and Neon PostgreSQL storage.
+
+The hosted instance is an operations environment, with protected admin routes. It is not an open interactive admin demo. The implementation is an **MVP**: there is no automated unit/integration test framework or published coverage, user, or revenue metric. The database connection is deployment-specific; the deployment guide recommends a dedicated database rather than assuming access to another product's database.
+
+## Screenshot
+
+![Administration interface without a database](docs/screenshots/admin-offline.jpg)
+
+Captured locally on October 6, 2026, with no database credentials. The visible zeros and empty table demonstrate the unconfigured state; they are not business results. Product UI remains in Traditional Chinese.
+
+## Implemented features
+
+- Product lifecycle states, review queues, taxonomy, persona tags, and recommendation previews.
+- Affiliate link construction and platform-specific SubId adapters for KKday, Klook, Trip.com, and generic links.
+- Redirect tracking at `/go/<code>`; click logging is best-effort and does not block a valid redirect when logging fails.
+- CSV product/order imports, file-hash deduplication, and unique platform/order identifiers.
+- Revenue and attribution reports, broken-link checks, and product-coverage gaps.
+- Optional OpenAI classification and a Claude advisory optimizer whose proposals require review before application code executes them.
+- Daily health checks and metrics reports, with optional Discord delivery. The daily cron does **not** automatically fetch platform order reports.
+
+## Architecture
+
+```text
+Admin UI -> guarded admin APIs -> domain modules -> Neon PostgreSQL
+Product CTA -> /go/<code> -> compose SubId -> log click -> affiliate platform
+Platform CSV -> adapter normalization -> order import -> attribution / revenue
+Daily cron -> link health + metrics -> optional Discord report
+Local Node host -> advisory optimizer -> pending proposals -> human review
+```
+
+The Claude Agent SDK runs on a local or other Node host; its native binary is excluded from Vercel function tracing. `/api/admin/optimize` is not a working serverless optimizer without that runtime. The agent cannot directly execute arbitrary writes. After approval, application code can pause, boost a bounded recommendation score, or retag a product; replacement and gap proposals remain advisory.
+
+## Tech stack
+
+| Layer | Implementation |
 | --- | --- |
-| Web application | Next.js App Router, React, TypeScript, Tailwind CSS. |
-| Data layer | Neon PostgreSQL with affiliate product, click, order, and proposal records. |
-| Integrations | Platform adapters for affiliate links and order report formats. |
-| Operations | Protected admin routes, a daily cron endpoint, and optional Discord reports. |
-| AI workflow | Classification and an advisory optimizer; proposals are executed through application code after review. |
-| Click data | Salted session hashes when configured; click records omit raw IP addresses and email. |
+| Web | Next.js App Router, React, TypeScript, Tailwind CSS |
+| Database | Neon PostgreSQL HTTP client; lazy schema creation in domain modules |
+| Integrations | Platform adapters, CSV reports, Vercel Cron, optional Discord |
+| AI | OpenAI classification; Claude Agent SDK advisory proposals |
+| Verification | TypeScript, ESLint, production build, optional mutating smoke script |
 
-Source code is organized into `src/app/` for pages and routes, `src/lib/` for domain logic and platform adapters, and `scripts/` for import and diagnostic utilities.
+## Getting started
 
-## TBTI 聯盟商品與分潤連結 Agent
-
-聯盟商品生命週期管理：**蒐集商品 → 建立分潤連結 → 分類標籤 → 配對人格 → 追蹤點擊 → 匯入訂單 → 計算收益 → 淘汰低效商品**。
-
-獨立服務 + 自己的後台，與主站 [`tbtitest.com`](https://github.com/TREKX-dev/travelmbti) 共用同一個 Neon Postgres。完整設計見 [`docs/affiliate-agent/PLAN.md`](docs/affiliate-agent/PLAN.md)。
-
-## 快速開始
+Use Node.js 22 or 24 and npm.
 
 ```bash
-npm install
-cp .env.example .env.local   # 填 DATABASE_URL / ADMIN_KEY 等（全部可選，缺則對應功能停用）
-npm run dev                  # http://localhost:3000
+git clone https://github.com/Lother13501350/tbti-affiliate-agent.git
+cd tbti-affiliate-agent
+npm ci
+cp .env.example .env.local
+npm run dev
 ```
 
-後台：`http://localhost:3000/admin?key=<ADMIN_KEY>`
+Without credentials, the public status page is available but database features are disabled. Set a local `ADMIN_KEY` to open `http://localhost:3000/admin?key=<your-local-key>`. With no admin key, admin pages and APIs return 403. Set `DATABASE_URL` for stored products, links, clicks, and orders.
 
-## Scripts
+## Environment variables
 
-| 指令 | 用途 |
-|---|---|
-| `npm run dev` | 開發伺服器（Next 16 + Turbopack） |
-| `npm run build` / `npm run start` | 正式建置 / 啟動 |
-| `npm run typecheck` | `tsc --noEmit`（主要型別門檻） |
-| `npm run lint` | ESLint |
+[.env.example](.env.example) contains blank credentials and development defaults.
 
-> 目前沒有測試框架；主要驗收門檻為 `typecheck`、`lint` 與手動 smoke check。另有 `scripts/e2e.mjs`，執行前請閱讀內容並準備隔離測試環境，因為它會使用後台 API。
+| Variable | Purpose / missing-value behavior |
+| --- | --- |
+| `DATABASE_URL` | Database features; missing value disables storage. |
+| `ADMIN_KEY` | Admin gate; missing value denies access. APIs also accept `x-admin-key`. |
+| `AGENT_WRITE_ENABLED` | Enables gated write paths; defaults to `false`. |
+| `CLICK_HASH_SALT` | Hashes session identifiers; missing value omits the session hash. |
+| `CRON_SECRET` | Bearer authorization for cron; production denies an unconfigured secret. |
+| `DISCORD_WEBHOOK_URL` | Optional external reports; otherwise logs locally. |
+| `NEXT_PUBLIC_SITE_URL` | Absolute recommendation/redirect URL generation. |
+| `OPENAI_API_KEY`, `OPENAI_MODEL` | Optional classification and model selection. |
+| `ANTHROPIC_API_KEY` or `CLAUDE_CODE_OAUTH_TOKEN` | Optional local optimizer credentials. |
+| `ANTHROPIC_MODEL` | Optimizer model selection. |
 
-## 環境變數
+Admin page links currently carry the key in query parameters, which can appear in browser history or logs. This is an MVP authentication boundary, not multi-user identity/role management. Do not use real credentials in screenshots, issue reports, or shared URLs.
 
-| 變數 | 缺值時 |
-|---|---|
-| `DATABASE_URL` | DB 功能全停（後台仍可開、跳轉照走） |
-| `ADMIN_KEY` | `/admin` 與 `/api/admin/*` 一律 403 |
-| `AGENT_WRITE_ENABLED` | 唯讀 / 只報告（kill switch，預設 false） |
-| `CLICK_HASH_SALT` | 不寫 session 雜湊欄位 |
-| `DISCORD_WEBHOOK_URL` | 日報 / 警報只寫 console |
-| `CRON_SECRET` | production 下 `/api/cron/*` 一律 403 |
+Click records omit raw IP/email fields, but hashed identifiers and context are not a claim of irreversible anonymity. Deployment logs and hosting infrastructure have their own data-handling behavior.
 
-## 核心流程
+## Verification
 
-```
-使用者點商品卡 CTA → /go/<code>
-  → 解析連結 → 寫 affiliate_clicks（情境 + 雜湊 session，無 PII）
-  → 302 到平台聯盟連結（cid / ud1 / sub_id 原樣帶出）
-平台後台依 SubId 歸因 → 下載訂單報表 CSV → 後台匯入（platform+external_order_id 去重）
-  → 點擊 × 訂單歸因 → 商品 / 人格 / 平台收益（CTR / EPC / RPM）
-每日 Cron：健康檢查連結 → 標記失效 → 算 CTR → 匯入訂單 → 算收益 → Discord 日報
+```bash
+npm run typecheck
+npm run lint
+npm run build
 ```
 
-## 隱私
+All three passed locally on October 6, 2026 without service credentials. These checks establish static/build validity, not database or affiliate-platform correctness. `scripts/e2e.mjs` calls admin APIs and can mutate products; read it and use an isolated database before running it. `scripts/db-check.mjs` also initializes/checks database state. Neither was run against production during the portfolio audit.
 
-`affiliate_clicks` 只存情境欄位（人格碼 / 頁面 / 版位 / campaign）與**雜湊化** session，**不存原始 IP / email**，延續主站 `ad_clicks` / `answer_logs` 的「無法回推個人」原則。
+## Project structure
 
-## MVP 範圍
+```text
+src/app/admin/          Administration pages
+src/app/api/admin/      Guarded management endpoints
+src/app/api/cron/daily/ Daily link health and metrics
+src/app/go/[code]/      Public redirect and click flow
+src/lib/adapters/      Platform link / order normalization
+src/lib/               Products, orders, clicks, scoring, AI, proposals
+scripts/               Imports, DB diagnostics, API smoke script
+docs/affiliate-agent/  Design and deployment documentation
+```
 
-見 PLAN.md §6。本版回答：**哪些商品有人點？哪些有成交？哪些真正有收益？**
+## Deployment and engineering highlights
 
-## Current scope & deployment
+Vercel serves the web app and HTTP endpoints; Neon stores operations data. `vercel.json` schedules the daily endpoint at 01:00 UTC. Configure production secrets on the hosting platform and keep the write switch disabled until the environment has been verified. See [deployment instructions](docs/affiliate-agent/DEPLOY.md).
 
-This repository contains an MVP service and administration interface. Database-backed features require `DATABASE_URL`; admin routes require `ADMIN_KEY`. AI and notification features additionally need their own credentials. An existing hosted instance is an operations environment and may require authorization, rather than providing a public interactive demo.
+The most useful code-review entry points are `src/lib/orders.ts` for import idempotency, `src/lib/adapters/` for normalization, `src/lib/optimizer.ts` for constrained tools, and `src/lib/proposals.ts` for reviewed execution.
 
-For local development, use the environment variable reference above and [`.env.example`](.env.example). Production setup and migration guidance are in [docs/affiliate-agent/DEPLOY.md](docs/affiliate-agent/DEPLOY.md). Design and planned extensions are documented in [docs/affiliate-agent/PLAN.md](docs/affiliate-agent/PLAN.md); roadmap items should not be treated as implemented features.
+Outstanding engineering work: domain/integration tests, controlled schema migrations, stronger admin identity, and dependency security updates. An October 6 npm audit reported vulnerable dependencies; passing the build does not resolve those advisories. No license file is currently included; public visibility alone does not grant a redistribution license.
